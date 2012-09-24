@@ -130,3 +130,6 @@ A New Day
 - [destruct (X.compare_spec x x')], not compare, compare_spec because it introduces [R x x']
 - done, stripped of [change]
 - learned about usages of [generalize], [inversion_clear], [discriminate], [X.compare_spec], [induction as]
+
+* Who is Okasaki?
+- omg, found another newer nice link to verified Red Black trees!! http://www.mew.org/~kazu/proj/red-black-tree/

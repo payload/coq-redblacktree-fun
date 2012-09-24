@@ -156,19 +156,22 @@ Definition bal l x r :=
       end
     else
       create l x r.
+*)
 
 (** ** Insertion *)
 
-Fixpoint add x s := match s with
-   | Leaf => Node Leaf x Leaf 1
-   | Node l y r h =>
-      match X.compare x y with
-         | Lt => bal (add x l) y r
-         | Eq => Node l y r h
-         | Gt => bal l y (add x r)
-      end
+Fixpoint add x s := 
+  match s with
+    | Leaf => Node Leaf x Leaf Black
+    | Node l y r c =>
+        match X.compare x y with
+          | Lt => bal (add x l) y r
+          | Eq => Node l y r h
+          | Gt => bal l y (add x r)
+        end
   end.
 
+(*
 (** ** Join
 
     Same as [bal] but does not assume anything regarding heights
