@@ -41,24 +41,30 @@ Unset Strict Implicit.
 Local Unset Elimination Schemes.
 Local Unset Case Analysis Schemes.
 
+(* XXX not for me
 (** * Ops : the pure functions *)
 
 Module Ops (Import I:Int)(X:OrderedType) <: WOps X.
+*)
+Module Foo.
+Declare Module I:Int.
+Declare Module X:OrderedType.
 Local Open Scope Int_scope.
 Local Open Scope lazy_bool_scope.
 
 Definition elt := X.t.
 
-(** ** Trees
+(** ** Trees *)
 
-   The fourth field of [Node] is the height of the tree *)
+Inductive color := Red | Black.
 
 Inductive tree :=
   | Leaf : tree
-  | Node : tree -> X.t -> tree -> int -> tree.
+  | Node : tree -> X.t -> tree -> color -> tree.
 
 Definition t := tree.
 
+(* XXX not for me
 (** ** Basic functions on trees: height and cardinal *)
 
 Definition height (s : t) : int :=
@@ -72,6 +78,7 @@ Fixpoint cardinal (s : t) : nat :=
    | Leaf => 0%nat
    | Node l _ r _ => S (cardinal l + cardinal r)
   end.
+*)
 
 (** ** Empty Set *)
 
@@ -99,10 +106,11 @@ Fixpoint mem x s :=
 
 (** ** Singleton set *)
 
-Definition singleton x := Node Leaf x Leaf 1.
+Definition singleton x := Node Leaf x Leaf Red.
 
 (** ** Helper functions *)
 
+(* XXX not for me
 (** [create l x r] creates a node, assuming [l] and [r]
     to be balanced and [|height l - height r| <= 2]. *)
 
@@ -259,10 +267,12 @@ Definition concat s1 s2 :=
     - [r] is the set of elements of [s] that are [> x]
     - [present] is [true] if and only if [s] contains  [x].
 *)
+*)
 
 Record triple := mktriple { t_left:t; t_in:bool; t_right:t }.
 Notation "<< l , b , r >>" := (mktriple l b r) (at level 9).
 
+(*
 Fixpoint split x s : triple := match s with
   | Leaf => << Leaf, false, Leaf >>
   | Node l y r h =>
@@ -490,9 +500,10 @@ Definition equal s1 s2 : bool :=
  end.
 
 End Ops.
+*)
 
 
-
+(* XXX not for me
 (** * MakeRaw
 
    Functor of pure functions + a posteriori proofs of invariant
@@ -500,6 +511,7 @@ End Ops.
 
 Module MakeRaw (Import I:Int)(X:OrderedType) <: RawSets X.
 Include Ops I X.
+*)
 
 (** * Invariants *)
 
@@ -701,15 +713,15 @@ Proof.
 Qed.
 
 Lemma lt_tree_node :
- forall (x y : elt) (l r : tree) (h : int),
- lt_tree x l -> lt_tree x r -> X.lt y x -> lt_tree x (Node l y r h).
+ forall (x y : elt) (l r : tree) c,
+ lt_tree x l -> lt_tree x r -> X.lt y x -> lt_tree x (Node l y r c).
 Proof.
  unfold lt_tree; intuition_in; order.
 Qed.
 
 Lemma gt_tree_node :
- forall (x y : elt) (l r : tree) (h : int),
- gt_tree x l -> gt_tree x r -> X.lt x y -> gt_tree x (Node l y r h).
+ forall (x y : elt) (l r : tree) c,
+ gt_tree x l -> gt_tree x r -> X.lt x y -> gt_tree x (Node l y r c).
 Proof.
  unfold gt_tree; intuition_in; order.
 Qed.
@@ -744,6 +756,7 @@ Local Hint Resolve lt_tree_not_in lt_tree_trans gt_tree_not_in gt_tree_trans.
 
 (** * Inductions principles for some of the set operators *)
 
+(* XXX not for me
 Functional Scheme bal_ind := Induction for bal Sort Prop.
 Functional Scheme remove_min_ind := Induction for remove_min Sort Prop.
 Functional Scheme merge_ind := Induction for merge Sort Prop.
@@ -753,6 +766,7 @@ Functional Scheme concat_ind := Induction for concat Sort Prop.
 Functional Scheme inter_ind := Induction for inter Sort Prop.
 Functional Scheme diff_ind := Induction for diff Sort Prop.
 Functional Scheme union_ind := Induction for union Sort Prop.
+*)
 
 Ltac induct s x :=
  induction s as [|l IHl x' r IHr h]; simpl; intros;
@@ -774,7 +788,7 @@ Open Local Scope pair_scope.
 
 Lemma empty_spec : Empty empty.
 Proof.
- intro; intro.
+ intro. intro.
  inversion H.
 Qed.
 
@@ -785,16 +799,60 @@ Qed.
 
 (** * Emptyness test *)
 
+Require Import Coq.Program.Equality.
+
 Lemma is_empty_spec : forall s, is_empty s = true <-> Empty s.
 Proof.
- destruct s as [|r x l h]; simpl; auto.
- split; auto. red; red; intros; inv.
- split; auto. try discriminate. intro H; elim (H x); auto.
+ destruct s as [|r x l c].
+  constructor.
+   compute. intros. inversion H0.
+   auto.
+  constructor.
+   discriminate. (* is_empty (Node ...) = true -- is easily found as false *)
+   intro. induction (H x). auto. (* XXX what is induction doing here? *)
 Qed.
 
 (** * Membership *)
 
+Ltac order_lt := match goal with
+ | U: lt_tree _ ?s, V: InT _ ?s |- _ => generalize (U _ V)
+end.
+
+Ltac order_gt := match goal with
+ | U: gt_tree _ ?s, V: InT _ ?s |- _ => generalize (U _ V)
+end.
+
+(* Ltac induct s x :=
+ induction s as [|l IHl x' r IHr h]; simpl; intros;
+ [|elim_compare x x'; intros; inv].
+*)
+
 Lemma mem_spec : forall s x `{Ok s}, mem x s = true <-> InT x s.
+Proof.
+ constructor.
+  induction s as [|l IHl x' r IHr].
+   simpl. intro. discriminate. 
+   simpl. intro. destruct (X.compare_spec x x').
+    inversion_clear H. change (Ok l) in H2. change (Ok r) in H3. auto.
+    inversion_clear H. change (Ok l) in H2. change (Ok r) in H3. auto.
+    inversion_clear H. change (Ok l) in H2. change (Ok r) in H3. auto.
+  induction s as [|l Ihl x' r IHr].
+   simpl. intro. contradict H0. auto.
+   simpl. intro. destruct (X.compare x x').
+  induct s x.
+   contradict H0. auto.
+   trivial.
+   trivial.
+   trivial.
+   MX.order.
+   auto.
+   generalize (H5 _ H). MX.order.
+   MX.order.
+   generalize (H4 _ H). MX.order.
+   auto.
+Qed.   
+
+Lemma mem_spec2 : forall s x `{Ok s}, mem x s = true <-> InT x s.
 Proof.
  split.
  induct s x; auto; try discriminate.

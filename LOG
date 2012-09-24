@@ -1,0 +1,132 @@
+* How to comment?
+- looked up how to comment (* *)
+ 
+* Write Color and Tree
+** What type for key?
+- nat
+
+* Try to write a "Fixpoint is_member a tree"
+** Don't know how to compare and match for result.
+- looked up some Definition compare
+- found Orders
+- didn't get how to use it
+- looked finally in GenericMinMax, saw usage of OrderedTypeFull'
+- looked up OrderedTypeFull' in Orders
+- fixed is_member
+** Can't "Compute (is_member 1 Leaf)." cause 1 is not a "t".
+- found Nat_as_OT
+*** How to import Nat_as_OT?
+- discovered Include
+- can't Include OrderedTypeFull' and Nat_as_OT at the same time
+- abandon OrderedTypeFull'
+
+* Want to prove that is_member is right for all binary search trees.
+** How to say "binary search tree"?
+- found MSet.MSetAVL
+- reading, playing, copying
+** "forall foo, some foo" is soo redundant!
+- Generalizable All Variables. `(some foo)
+- used for copying MSetAVL.InT, here renamed to InTree
+** How complicated are proofs about "is a binary search tree" in MSetAVL?
+- very much
+
+* Writing
+- orienting on design decision of Left-leaning Red-Black Trees by Robert Sedgewick
+- Fixpoints for membership
+- Fixpoints for binary search tree
+- Fixpoints for reb black tree
+- Fixpoint for insert
+
+* Design Decisions
+- no duplicates
+- new nodes are red
+
+A New Day
+
+* reading MSetAVL.v
+** where is a Lemma empty_spec
+- works for me
+- fun :)
+- how do I import MSetAVL stuff?
+- I think I copy stuff for now
+
+* copying MSetAVL.v
+* changing as I go through
+- abandon the height in Node
+- replacing with color
+- comment out all algorithms, but Membership
+- go through some proofs, works
+** step by step through Proof of Lemma is_empty_spec
+*** forall (s:tree) ... destruct s
+- replaces s in forall (s : tree) with two goals
+- instance of Leaf and instance of Node
+- with destruct s as [|l x r c] one can name the fields in Node
+*** What to do in case of [<->]?
+- try [split]: two goals, one for [->] and one in the other direction
+*** What to do with Inductive Foo infront of something?
+- try [red]: replaces Foo with its definition
+*** read tactic [inversion]
+- understood
+*** read Introduction tactics
+- think that only [constructor] is userful
+- abandon [split]
+*** read Induction and Case analysis
+- well, use [induction] and [destruct]
+- try [dependent induction] and [dependent destruction]
+- [dependent destruction] has no [_ as []]
+*** What does [elim] do?
+- it works
+- read it, don't understand why it worked
+- try to build with [induction]
+- works the same
+- documentation says that patterns are possible
+- don't understand what patterns do here
+**
+- Qed
+
+** mem_spec
+- [repeat progress intuition] to the rescue
+- don't understand why MX.order works (where must be some implemented interface)
+- don't understand how [order] works
+- split into [order_lt] and [order_gt] and only [generalize]
+- see, what applies
+- try to construct [generalize] manually
+- read [generalize]
+- don't understand why [generalize] works
+- does [generalize] matches in [mem]? (or do I have to understand Ltac more?)
+
+A New Day
+
+* coq.inria.fr is down!
+- I have the reference manual installed by the package manager :-)
+* Set Ltac Debug
+- hit enter
+** freezes Proof General
+- C-x b *coq*
+- try to issue Unset Ltac Debug
+* What is generalize (H4 _ H) doing in mem_spec?
+- H4 is      lt_tree x' l
+- H is       Int x l
+- result is  lt x x'
+- look into definition of lt_tree
+- find  x s => forall y, Int y s -> lt y x
+- here, x is H4.x' and y gets to be H.x
+- so because of H, we can follow -> to  lt x x'
+- what is the _ for?
+* What is MX.order doing?
+- one thing is, looking for contradictions
+- go through hypotheses and find a < b and b < a and prove exfalso
+* Finally understand the cause of [order_lt]!!
+- pulling out concrete lt hypotheses through lt_tree
+- [lt_tree a t]: forall b', InT b' t -> lt b' a
+- [InT b t]: b' =generalize= b -> lt b a
+* What does mem_spec2 do?
+- fiddling apart intuition_in and order
+- works :)
+- fiddling apart induct
+- omg
+- Ltac debugging of induct, copy trace, go through step by step
+- hm, trace jumps between subgoals
+- [destruct (X.compare_spec x x')], not compare, compare_spec because it introduces [R x x']
+- done, stripped of [change]
+- learned about usages of [generalize], [inversion_clear], [discriminate], [X.compare_spec], [induction as]
