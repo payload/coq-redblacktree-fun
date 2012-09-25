@@ -160,6 +160,7 @@ Definition bal l x r :=
 
 (** ** Insertion *)
 
+(*
 Fixpoint add x s := 
   match s with
     | Leaf => Node Leaf x Leaf Black
@@ -170,6 +171,7 @@ Fixpoint add x s :=
           | Gt => bal l y (add x r)
         end
   end.
+*)
 
 (*
 (** ** Join
@@ -544,7 +546,7 @@ Definition Exists (P : elt -> Prop) s := exists x, InT x s /\ P x.
 
 Definition lt_tree x s := forall y, InT y s -> X.lt y x.
 Definition gt_tree x s := forall y, InT y s -> X.lt x y.
-
+ 
 (** [bst t] : [t] is a binary search tree *)
 
 Inductive bst : tree -> Prop :=
@@ -838,23 +840,21 @@ Proof.
   induction s as [|l IHl x' r IHr].
    simpl. intro. discriminate. 
    simpl. intro. destruct (X.compare_spec x x').
-    inversion_clear H. change (Ok l) in H2. change (Ok r) in H3. auto.
-    inversion_clear H. change (Ok l) in H2. change (Ok r) in H3. auto.
-    inversion_clear H. change (Ok l) in H2. change (Ok r) in H3. auto.
+    inversion_clear H. auto.
+    inversion_clear H. auto.
+    inversion_clear H. auto.
   induction s as [|l Ihl x' r IHr].
    simpl. intro. contradict H0. auto.
-   simpl. intro. destruct (X.compare x x').
-  induct s x.
-   contradict H0. auto.
-   trivial.
-   trivial.
-   trivial.
-   MX.order.
-   auto.
-   generalize (H5 _ H). MX.order.
-   MX.order.
-   generalize (H4 _ H). MX.order.
-   auto.
+   simpl. intro. destruct (X.compare_spec x x').
+    trivial.
+    inversion_clear H. inversion_clear H0.
+     MX.order.
+     auto.
+     generalize (H5 _ H). MX.order.
+     inversion_clear H. inversion_clear H0.
+      MX.order.
+      generalize (H4 _ H). MX.order.
+      auto.
 Qed.   
 
 Lemma mem_spec2 : forall s x `{Ok s}, mem x s = true <-> InT x s.
