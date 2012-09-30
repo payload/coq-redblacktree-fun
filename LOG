@@ -133,3 +133,27 @@ A New Day
 
 * Who is Okasaki?
 - omg, found another newer nice link to verified Red Black trees!! http://www.mew.org/~kazu/proj/red-black-tree/
+
+A NEW DAY
+
+* write those Inductive definitions for those invariants
+- isNotRedRed: it IsBlack or it IsNotRedRed
+** How to say black depth is same for each leaf?
+- How to say for each leaf?
+- Okay, looked it up in https://github.com/kazu-yamamoto/llrbtree/blob/master/proof/llrbtree.v
+- isSameBlackdepth "counts" from Leaf to the node up and it has to be the same number left and right
+
+* Do I need all of those Hints and autos?
+- comment Hints away
+- Fail fast and early: pauto := progress auto.
+- [apply] explicitly Lemmas
+- found [debug eauto]
+- uh, [apply SomeConstructor]
+
+* Bare Minimum?
+- extracted everything needed to proof [mem]
+
+A NEW DAY
+
+- finished sketch.v, hooray
+- git?? !!
